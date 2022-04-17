@@ -78,8 +78,6 @@ def FieryStatus(serverName):
             return True
         if r_status != "running":
             return False
-        else:
-            return False
     except Exception:
         return False
     finally:
