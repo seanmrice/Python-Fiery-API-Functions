@@ -4,9 +4,9 @@ import urllib3
 # API Key obtainable via developer.efi.com
 APIKey = """YOUR API KEY HERE"""
 # API User is from the Fiery server itself, cannot be Admin/Administrator/Guest
-APIUser = "APIUSER"
+APIUser = "API_USER"
 # API Password is the password for the above API User
-APIPassword = "APIPASSWORD"
+APIPassword = "API_PASSWORD"
 API_Login_Payload: dict = {"username": APIUser, "password": APIPassword, "apikey": APIKey}
 
 # Disable HTTPS certificate checks and warnings for Fiery self-signed certificates
@@ -24,7 +24,7 @@ else:
 
 
 # NOTES: Unless otherwise stated, "serverName" accepts the IP address of the Fiery server *or* the DNS name of the
-# Fiery Server It is highly recommended to supply the IP address and not the DNS address of the Fiery since DNS can
+# Fiery Server I highly recommended supplying the IP address and not the DNS address of the Fiery since DNS can
 # tend to be flaky Fiery API documentation is available at https://developer.efi.com/ - but in my opinion it is
 # extremely unclear and incomplete I recommend running the FieryPullHeld() function on a few jobs first, so you can
 # see what options and attributes are actually available in your environment - then modifying the FieryJobUpdate() to
@@ -44,7 +44,7 @@ def FieryPullHeld(serverName):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             print("Unable to log into Fiery at " + str(serverName))
             return False
     r_held = fiery_session.get("https://" + serverName + "/live/api/v5/jobs/held", data=API_Login_Payload,
@@ -68,24 +68,25 @@ def FieryStatus(serverName):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             print("Unable to log into Fiery at " + str(serverName))
             return False
     try:
         r_status = fiery_session.get("https://" + serverName + "/live/api/v5/status", verify=verify_bool).json()
-        if r_status['data']['item']['fiery'] == "running":
+        r_status = r_status['data']['item']['fiery']
+        if r_status == "running":
             return True
-        elif r_status['data']['item']['fiery'] != "running":
+        if r_status != "running":
             return False
         else:
             return False
-    except:
+    except Exception:
         return False
     finally:
         FieryLogout(serverName, fiery_session)
 
 
-def FieryJobUpdate(job_id, new_copycount, serverName):
+def FieryJobUpdate(job_id, new_copy_count, serverName):
     # Update the copy count of a job
     # Requires the job ID (obtainable via FieryPullHeld)
     # In this case the function is updating the job copy count (num copies) attribute
@@ -93,14 +94,14 @@ def FieryJobUpdate(job_id, new_copycount, serverName):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             return False
     try:
-        job_payload = {"attributes": {"num copies": new_copycount}}
+        job_payload = {"attributes": {"num copies": new_copy_count}}
         fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=job_payload,
                            verify=verify_bool)
         return True
-    except:
+    except Exception:
         return False
     finally:
         FieryLogout(serverName, fiery_session)
@@ -112,13 +113,13 @@ def FieryPullPresets(serverName):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             return False
     try:
         fiery_presets = fiery_session.get("https://" + serverName + "/live/api/v5/presets",
                                           verify=verify_bool).json()
         return fiery_presets
-    except:
+    except Exception:
         return False
     finally:
         FieryLogout(serverName, fiery_session)
@@ -131,13 +132,13 @@ def Fiery_BWJob(serverName, job_id):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             return False
     try:
         fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=bw_payload,
                            verify=verify_bool)
         return True
-    except:
+    except Exception:
         return False
     finally:
         FieryLogout(serverName, fiery_session)
@@ -151,13 +152,13 @@ def Fiery_Preset_Apply(serverName, job_id, presetID):
     if fiery_session is None:
         try:
             FieryLogin(serverName)
-        except:
+        except Exception:
             return False
     try:
         fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=preset_payload,
                            verify=verify_bool)
         return True
-    except:
+    except Exception:
         return False
     finally:
         FieryLogout(serverName, fiery_session)
