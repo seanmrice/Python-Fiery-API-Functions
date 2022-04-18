@@ -1,4 +1,4 @@
-# Python-Fiery-API-Functions
+# Python-Fiery-API-Functions [![CodeFactor](https://www.codefactor.io/repository/github/seanmrice/python-fiery-api-functions/badge)](https://www.codefactor.io/repository/github/seanmrice/python-fiery-api-functions)
 Generic repository of various preformatted API call functions for Fiery print servers, written in Python and updated for Fiery API v5
 
 NOTES: Unless otherwise stated, "serverName" accepts the IP address of the Fiery server *or* the DNS name of the Fiery Server
