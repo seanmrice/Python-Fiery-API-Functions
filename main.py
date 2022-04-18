@@ -34,7 +34,7 @@ def FieryLogin(serverName):
     # Call FieryLogin before any other function (most functions have this function integrated)
     # Store the fiery_session output from the function into a variable to pass on to other functions if required
     fiery_session = requests.Session()
-    fiery_session.post("https://" + serverName + "/live/api/v5/login", data=API_Login_Payload, verify=verify_bool)
+    fiery_session.post(f"https://{serverName}/live/api/v5/login", data=API_Login_Payload, verify=verify_bool)
     return fiery_session
 
 
@@ -45,18 +45,17 @@ def FieryPullHeld(serverName):
         try:
             FieryLogin(serverName)
         except Exception:
-            print("Unable to log into Fiery at " + str(serverName))
+            print(f"Unable to log into Fiery at {serverName}")
             return False
-    r_held = fiery_session.get("https://" + serverName + "/live/api/v5/jobs/held", data=API_Login_Payload,
-                               verify=verify_bool)
+    held = fiery_session.get(f"https://{serverName}/live/api/v5/jobs/held", data=API_Login_Payload, verify=verify_bool)
     FieryLogout(serverName, fiery_session)
-    return r_held.json()
+    return held.json()
 
 
 def FieryLogout(serverName, session):
     # ALWAYS log out of the Fiery between API calls, or you will eventually get a failure to log in until the Fiery
     # is rebooted
-    r_out = session.post("https://" + serverName + "/live/api/v5/logout", data=API_Login_Payload, verify=verify_bool)
+    r_out = session.post(f"https://{serverName}/live/api/v5/logout", data=API_Login_Payload, verify=verify_bool)
     return r_out.json()
 
 
@@ -69,10 +68,10 @@ def FieryStatus(serverName):
         try:
             FieryLogin(serverName)
         except Exception:
-            print("Unable to log into Fiery at " + str(serverName))
+            print(f"Unable to log into Fiery at {serverName}")
             return False
     try:
-        r_status = fiery_session.get("https://" + serverName + "/live/api/v5/status", verify=verify_bool).json()
+        r_status = fiery_session.get(f"https://{serverName}//live/api/v5/status", verify=verify_bool).json()
         r_status = r_status['data']['item']['fiery']
         if r_status == "running":
             return True
@@ -96,7 +95,7 @@ def FieryJobUpdate(job_id, new_copy_count, serverName):
             return False
     try:
         job_payload = {"attributes": {"num copies": new_copy_count}}
-        fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=job_payload,
+        fiery_session.post(f"https://{serverName}/live/api/v5/jobs/{job_id}/", json={job_payload},
                            verify=verify_bool)
         return True
     except Exception:
@@ -114,8 +113,7 @@ def FieryPullPresets(serverName):
         except Exception:
             return False
     try:
-        fiery_presets = fiery_session.get("https://" + serverName + "/live/api/v5/presets",
-                                          verify=verify_bool).json()
+        fiery_presets = fiery_session.get(f"https://{serverName}/live/api/v5/presets", verify=verify_bool).json()
         return fiery_presets
     except Exception:
         return False
@@ -133,8 +131,7 @@ def Fiery_BWJob(serverName, job_id):
         except Exception:
             return False
     try:
-        fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=bw_payload,
-                           verify=verify_bool)
+        fiery_session.post(f"https://{serverName}/live/api/v5/jobs/{job_id}/", json=bw_payload, verify=verify_bool)
         return True
     except Exception:
         return False
@@ -153,8 +150,7 @@ def Fiery_Preset_Apply(serverName, job_id, presetID):
         except Exception:
             return False
     try:
-        fiery_session.post("https://" + serverName + "/live/api/v5/jobs/" + job_id + "/", json=preset_payload,
-                           verify=verify_bool)
+        fiery_session.post(f"https://{serverName}/live/api/v5/jobs/{job_id}/", json=preset_payload, verify=verify_bool)
         return True
     except Exception:
         return False
