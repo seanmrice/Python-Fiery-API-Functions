@@ -195,7 +195,6 @@ def FieryOperation(serverName, request):
     for each in methods:
         if request is each:
             allow = 1
-            pass
     if allow == 1:
         fiery_session = FieryLogin(serverName)
         if fiery_session is None:
