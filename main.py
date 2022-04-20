@@ -48,7 +48,6 @@ def FieryLogout(serverName, session):
 def FieryStatus(serverName):
     # Returns True if the supplied Fiery IP/DNS name is in a running state
     # Returns False if the Fiery cannot be reached, or if it is not in a running state
-    # If it returns False, it will also log to the central logging location
     fiery_session = FieryLogin(serverName)
     if fiery_session is None:
         try:
