@@ -252,7 +252,7 @@ def FieryStatePull(serverName, printState):
         try:
             jobs_by_state = fiery_session.post(f'https://{serverName}/live/api/v5/server/jobs/{printState}',
                                                data=API_Login_Payload, verify=verify_bool).json()
-            return True
+            return jobs_by_state
         except Exception:
             return False
         finally:
