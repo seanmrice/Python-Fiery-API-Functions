@@ -189,7 +189,9 @@ def Fiery_Preset_Apply(serverName, job_id, presetID):
 
 
 def FieryOperation(serverName, request):
-    # Supported methods are [restart,reboot,stop,clear,pause,resume,cancelprinting,cancelripping]
+    # In addition to serverName (IP/DNS Name of the Fiery Server)
+    # "request" is the operation you want to perform on the Fiery
+    # Supported requests are: restart, reboot, stop, clear, pause, resume, cancelprinting, cancelripping]
     allow = 0
     methods = ('restart', 'reboot', 'stop', 'clear', 'pause', 'resume', 'cancelprinting', 'cancelripping')
     for each in methods:
@@ -205,7 +207,56 @@ def FieryOperation(serverName, request):
         try:
             fiery_session.post(f"https://{serverName}/live/api/v5/server/{methods}", verify=verify_bool)
             return True
+        except Exception:
+            return False
         finally:
             FieryLogout(serverName, fiery_session)
     else:
+        print("Invalid request")
+        return False
+
+
+def FieryJobLog(serverName):
+    fiery_session = FieryLogin(serverName)
+    if fiery_session is None:
+        try:
+            FieryLogin(serverName)
+        except Exception:
+            return False
+    try:
+        job_log = fiery_session.post(f"https://{serverName}/live/api/v5/accounting", verify=verify_bool).json()
+        return job_log
+    except Exception:
+        return False
+    finally:
+        FieryLogout(serverName, fiery_session)
+
+
+def FieryStatePull(serverName, printState):
+    # Pull all jobs based on the specified state (printState)
+    # printState supports: held, processed, spooled, printed, waiting to process,
+    # waiting to print, printing, processing, archived
+    allow = 0
+    possible_states = ('held', 'processed', 'spooled', 'printed', 'waiting to process', 'waiting to print', 'printing',
+                       'processing', 'archived')
+    for each in possible_states:
+        if printState is each:
+            allow = 1
+    if allow == 1:
+        fiery_session = FieryLogin(serverName)
+        if fiery_session is None:
+            try:
+                FieryLogin(serverName)
+            except Exception:
+                return False
+        try:
+            jobs_by_state = fiery_session.post(f'https://{serverName}/live/api/v5/server/jobs/{printState}',
+                                               data=API_Login_Payload, verify=verify_bool).json()
+            return True
+        except Exception:
+            return False
+        finally:
+            FieryLogout(serverName, fiery_session)
+    else:
+        print("Invalid request")
         return False
