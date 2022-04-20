@@ -38,20 +38,6 @@ def FieryLogin(serverName):
     return fiery_session
 
 
-def FieryPullHeld(serverName):
-    # Function attempts to log into the specified server, and pull a JSON formatted list of all the held jobs
-    fiery_session = FieryLogin(serverName)
-    if fiery_session is None:
-        try:
-            FieryLogin(serverName)
-        except Exception:
-            print(f"Unable to log into Fiery at {serverName}")
-            return False
-    held = fiery_session.get(f"https://{serverName}/live/api/v5/jobs/held", data=API_Login_Payload, verify=verify_bool)
-    FieryLogout(serverName, fiery_session)
-    return held.json()
-
-
 def FieryLogout(serverName, session):
     # ALWAYS log out of the Fiery between API calls, or you will eventually get a failure to log in until the Fiery
     # is rebooted
@@ -81,6 +67,50 @@ def FieryStatus(serverName):
         return False
     finally:
         FieryLogout(serverName, fiery_session)
+
+
+def FieryPullHeld(serverName):
+    # Function attempts to log into the specified server, and pull a JSON formatted list of all the held jobs
+    fiery_session = FieryLogin(serverName)
+    if fiery_session is None:
+        try:
+            FieryLogin(serverName)
+        except Exception:
+            print(f"Unable to log into Fiery at {serverName}")
+            return False
+    held = fiery_session.get(f"https://{serverName}/live/api/v5/jobs/held", data=API_Login_Payload, verify=verify_bool)
+    FieryLogout(serverName, fiery_session)
+    return held.json()
+
+
+def FieryPullPrinting(serverName):
+    # Function attempts to log into the specified server, and pull a JSON formatted list of all the printing jobs
+    fiery_session = FieryLogin(serverName)
+    if fiery_session is None:
+        try:
+            FieryLogin(serverName)
+        except Exception:
+            print(f"Unable to log into Fiery at {serverName}")
+            return False
+    printing = fiery_session.get(f"https://{serverName}/live/api/v5/jobs/printing", data=API_Login_Payload,
+                                 verify=verify_bool)
+    FieryLogout(serverName, fiery_session)
+    return printing.json()
+
+
+def FieryPullPrinted(serverName):
+    # Function attempts to log into the specified server, and pull a JSON formatted list of all the printed jobs
+    fiery_session = FieryLogin(serverName)
+    if fiery_session is None:
+        try:
+            FieryLogin(serverName)
+        except Exception:
+            print(f"Unable to log into Fiery at {serverName}")
+            return False
+    printed = fiery_session.get(f"https://{serverName}/live/api/v5/jobs/printed", data=API_Login_Payload,
+                                verify=verify_bool)
+    FieryLogout(serverName, fiery_session)
+    return printed.json()
 
 
 def FieryJobUpdate(job_id, new_copy_count, serverName):
@@ -156,3 +186,27 @@ def Fiery_Preset_Apply(serverName, job_id, presetID):
         return False
     finally:
         FieryLogout(serverName, fiery_session)
+
+
+def FieryOperation(serverName, request):
+    # Supported methods are [restart,reboot,stop,clear,pause,resume,cancelprinting,cancelripping]
+    allow = 0
+    methods = ('restart', 'reboot', 'stop', 'clear', 'pause', 'resume', 'cancelprinting', 'cancelripping')
+    for each in methods:
+        if request is each:
+            allow = 1
+            pass
+    if allow == 1:
+        fiery_session = FieryLogin(serverName)
+        if fiery_session is None:
+            try:
+                FieryLogin(serverName)
+            except Exception:
+                return False
+        try:
+            fiery_session.post(f"https://{serverName}/live/api/v5/server/{methods}", verify=verify_bool)
+            return True
+        finally:
+            FieryLogout(serverName, fiery_session)
+    else:
+        return False
