@@ -204,7 +204,8 @@ def FieryOperation(serverName, request):
             except Exception:
                 return False
         try:
-            fiery_session.post(f"https://{serverName}/live/api/v5/server/{methods}", verify=verify_bool)
+            method_payload = {"method": {request}}
+            fiery_session.post(f"https://{serverName}/live/api/v5/server", json=method_payload, verify=verify_bool)
             return True
         except Exception:
             return False
